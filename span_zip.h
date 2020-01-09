@@ -4,7 +4,7 @@
 
 // FIXME: mocked out what the return value is actually supposed to be
 #include <vector>
-std::vector<std::tuple<const char*, int, char>>
+std::vector<std::tuple<cstr, int, char>>
 zip_span(
     // FIXME: mocked out what the input params are
     // should be made more generic

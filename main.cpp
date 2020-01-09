@@ -1,6 +1,6 @@
-#include "span_zip.h"
-
 typedef const char* cstr;
+
+#include "span_zip.h"
 
 void main()
 {
