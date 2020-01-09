@@ -2,6 +2,14 @@
 
 typedef const char* cstr;
 
+void test_function(gsl::span<int> i)
+{
+    for (int v : i)
+    {
+        printf("%i\n", v);
+    }
+}
+
 void main()
 {
     cstr keys[] = { "key1", "key2", "key3" };
@@ -16,5 +24,6 @@ void main()
     */
     (void)keys;
     (void)values;
+    test_function(values);
     (void)aux_data;
 }

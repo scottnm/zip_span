@@ -1,1 +1,1 @@
-cl main.cpp
+cl /I GSL\Include main.cpp
