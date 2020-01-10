@@ -5,24 +5,72 @@
 //
 // An iterable over all elements of the source iterable except those which match the predicate
 //
-template <typename T1, typename T2, typename T3>
+
+#define APPLY_TO_TEMPLATE_LIST(MACRO) \
+    MACRO(1) \
+    MACRO(2) \
+
+#define TEMPLATE_PARAM_DECL(N) \
+    , typename T##N
+
+#define TEMPLATE_SPAN_PARAM_LIST(N) \
+    ,gsl::span<T##N> s##N
+
+#define TEMPLATE_CTOR_SPAN_FIELD_INIT(N) \
+    s##N(s##N),
+
+#define TEMPLATE_PARAM(N) \
+    ,T##N
+
+#define TEMPLATE_POINTER_PARAM(N) \
+    ,T##N*
+
+#define TEMPLATE_ADVANCE_ITERATOR_ELEMENT(N) \
+    std::get<##N>(current) + 1,
+
+#define TEMPLATE_CHECK_ELEMENT_EQ(N) \
+    && std::get<##N>(current) == std::get<##N>(other.current)
+
+#define TEMPLATE_GET_BEGIN_REF(N) \
+    &s##N[0],
+
+#define TEMPLATE_GET_END_REF(N) \
+    &s##N[0] + len,
+
+#define TEMPLATE_DEFINE_SPAN_FIELDS(N) \
+    const gsl::span<T##N> s##N;
+
+#define TEMPLATE_MIN_SPAN_SIZE_HEAD(N) \
+    std::min(s##N.size(),
+
+#define TEMPLATE_MIN_SPAN_SIZE_TAIL(N) \
+    )
+
+#define TEMPLATE_SPAN_VAR_LIST(N) \
+    ,s##N
+
+template <
+    typename T0
+    APPLY_TO_TEMPLATE_LIST(TEMPLATE_PARAM_DECL)
+    >
 class ZipIterable
 {
 public:
     ZipIterable(
-        gsl::span<T1> s1,
-        gsl::span<T2> s2,
-        gsl::span<T3> s3,
-        ptrdiff_t len
+        ptrdiff_t len,
+        gsl::span<T0> s0
+        APPLY_TO_TEMPLATE_LIST(TEMPLATE_SPAN_PARAM_LIST)
         ) :
-        s1(s1),
-        s2(s2),
-        s3(s3),
+        s0(s0),
+        APPLY_TO_TEMPLATE_LIST(TEMPLATE_CTOR_SPAN_FIELD_INIT)
         len(len)
     {
     }
 
-    typename typedef std::tuple<T1*, T2*, T3*> TItem;
+    typename typedef std::tuple<
+        T0*
+        APPLY_TO_TEMPLATE_LIST(TEMPLATE_POINTER_PARAM)
+        > TItem;
 
     class ZipIterator
     {
@@ -40,8 +88,7 @@ public:
             current =
             {
                 std::get<0>(current) + 1,
-                std::get<1>(current) + 1,
-                std::get<2>(current) + 1,
+                APPLY_TO_TEMPLATE_LIST(TEMPLATE_ADVANCE_ITERATOR_ELEMENT)
             };
 
             return *this;
@@ -51,10 +98,8 @@ public:
             const ZipIterator& other
             )
         {
-            return
-                std::get<0>(current) == std::get<0>(other.current) &&
-                std::get<1>(current) == std::get<1>(other.current) &&
-                std::get<2>(current) == std::get<2>(other.current);
+            return std::get<0>(current) == std::get<0>(other.current)
+                APPLY_TO_TEMPLATE_LIST(TEMPLATE_CHECK_ELEMENT_EQ);
         }
 
         bool operator!=(
@@ -77,9 +122,8 @@ public:
     begin()
     {
         return ZipIterator(TItem{
-            &s1[0],
-            &s2[0],
-            &s3[0],
+            &s0[0],
+            APPLY_TO_TEMPLATE_LIST(TEMPLATE_GET_BEGIN_REF)
             });
     }
 
@@ -87,42 +131,64 @@ public:
     end()
     {
         return ZipIterator(TItem{
-            &s1[0] + len,
-            &s2[0] + len,
-            &s3[0] + len,
+            &s0[0] + len,
+            APPLY_TO_TEMPLATE_LIST(TEMPLATE_GET_END_REF)
             });
     }
 
 private:
-    const gsl::span<T1> s1;
-    const gsl::span<T2> s2;
-    const gsl::span<T3> s3;
+    const gsl::span<T0> s0;
+    APPLY_TO_TEMPLATE_LIST(TEMPLATE_DEFINE_SPAN_FIELDS)
     const ptrdiff_t len;
 };
 
-template<typename T1, typename T2, typename T3>
-ZipIterable<T1, T2, T3>
+template<
+    typename T0
+    APPLY_TO_TEMPLATE_LIST(TEMPLATE_PARAM_DECL)
+    >
+ZipIterable<
+    T0
+    APPLY_TO_TEMPLATE_LIST(TEMPLATE_PARAM)
+    >
 zip_span(
-    gsl::span<T1> s1,
-    gsl::span<T2> s2,
-    gsl::span<T3> s3
+    gsl::span<T0> s0
+    APPLY_TO_TEMPLATE_LIST(TEMPLATE_SPAN_PARAM_LIST)
     )
 {
     return {
-        s1,
-        s2,
-        s3,
-        std::min(std::min(s1.size(), s2.size()), s3.size())
+        std::min(s0.size(),
+        APPLY_TO_TEMPLATE_LIST(TEMPLATE_MIN_SPAN_SIZE_HEAD)
+        std::numeric_limits<ptrdiff_t>::max())
+        APPLY_TO_TEMPLATE_LIST(TEMPLATE_MIN_SPAN_SIZE_TAIL),
+        s0
+        APPLY_TO_TEMPLATE_LIST(TEMPLATE_SPAN_VAR_LIST)
         };
 }
 
-template<typename T1, size_t N1, typename T2, size_t N2, typename T3, size_t N3>
-ZipIterable<T1, T2, T3>
+#define TEMPLATE_PARAM_PLUS_SIZE_DECL(M) \
+    ,typename T##M, size_t N##M
+
+#define TEMPLATE_ARRAY_LITERAL_PARAM(M) \
+    ,T##M (&s##M)[N##M]
+
+template<
+    typename T0, size_t N0
+    APPLY_TO_TEMPLATE_LIST(TEMPLATE_PARAM_PLUS_SIZE_DECL)
+    >
+ZipIterable<
+    T0
+    APPLY_TO_TEMPLATE_LIST(TEMPLATE_PARAM)
+    >
 zip_span(
-    T1 (&s1)[N1],
-    T2 (&s2)[N2],
-    T3 (&s3)[N3]
+    T0 (&s0)[N0]
+    APPLY_TO_TEMPLATE_LIST(TEMPLATE_ARRAY_LITERAL_PARAM)
     )
 {
-    return zip_span<T1, T2, T3>(s1, s2, s3);
+    return zip_span<
+        T0
+        APPLY_TO_TEMPLATE_LIST(TEMPLATE_PARAM)
+        >(
+        s0
+        APPLY_TO_TEMPLATE_LIST(TEMPLATE_SPAN_VAR_LIST)
+        );
 }
