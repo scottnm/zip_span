@@ -115,3 +115,14 @@ zip_span(
         std::min(std::min(s1.size(), s2.size()), s3.size())
         };
 }
+
+template<typename T1, size_t N1, typename T2, size_t N2, typename T3, size_t N3>
+ZipIterable<T1, T2, T3>
+zip_span(
+    T1 (&s1)[N1],
+    T2 (&s2)[N2],
+    T3 (&s3)[N3]
+    )
+{
+    return zip_span<T1, T2, T3>(s1, s2, s3);
+}
