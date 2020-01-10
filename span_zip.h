@@ -2,10 +2,6 @@
 
 #include <gsl/span>
 
-//
-// An iterable over all elements of the source iterable except those which match the predicate
-//
-
 #define APPLY_TO_TEMPLATE_LIST(MACRO) \
     MACRO(1) \
     MACRO(2) \
