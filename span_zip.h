@@ -100,19 +100,18 @@ private:
     const ptrdiff_t len;
 };
 
-ZipIterable<NonCopy<cstr>, NonCopy<int>, NonCopy<char>>
+template<typename T1, typename T2, typename T3>
+ZipIterable<T1, T2, T3>
 zip_span(
-    // FIXME: mocked out what the input params are
-    // should be made more generic
-    gsl::span<NonCopy<cstr>> keys,
-    gsl::span<NonCopy<int>> values,
-    gsl::span<NonCopy<char>> aux
+    gsl::span<T1> s1,
+    gsl::span<T2> s2,
+    gsl::span<T3> s3
     )
 {
     return {
-        keys,
-        values,
-        aux,
-        std::min(std::min(keys.size(), values.size()), aux.size())
+        s1,
+        s2,
+        s3,
+        std::min(std::min(s1.size(), s2.size()), s3.size())
         };
 }

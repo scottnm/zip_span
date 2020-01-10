@@ -21,7 +21,7 @@ void main()
     NonCopy<int> values[] = { 1, 2, 3, 4 };
     NonCopy<char> aux_data[] = { '1', '2', '3', '4', '5' };
 
-    for (auto nextTuple : zip_span(keys, values, aux_data))
+    for (auto nextTuple : zip_span<NonCopy<cstr>, NonCopy<int>, NonCopy<char>>(keys, values, aux_data))
     {
         printf("%s, %i, %i\n", std::get<0>(nextTuple)->v, std::get<1>(nextTuple)->v, std::get<2>(nextTuple)->v);
     }
